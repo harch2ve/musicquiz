@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>단소·소금 운지법 연습</title>
+<style>
+:root{--bg:#faf7f2;--fg:#2a2420;--card:#fff;--mut:#8a7f75;--ac:#8b5a2b;--ok:#2e8b57;--no:#d1453b;--ln:#e3dbd0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1917;--fg:#f0e9e0;--card:#292422;--mut:#a89d92;--ac:#d9a066;--ln:#3d3631}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;max-width:560px;margin:0 auto;padding:16px 8px 40px}
+h1{font-size:22px;text-align:center;margin:28px 0 6px}
+p.s{text-align:center;color:var(--mut);margin:0 0 28px;font-size:14px}
+.big{display:block;width:calc(100% - 16px);margin:0 8px 14px;padding:26px;border:1px solid var(--ln);border-radius:16px;background:var(--card);color:var(--fg);font-size:22px;font-weight:700;cursor:pointer}
+.big small{display:block;font-size:13px;font-weight:400;color:var(--mut);margin-top:6px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut);padding:0 6px}
+.top button{background:none;border:none;color:var(--ac);font-size:14px;cursor:pointer;padding:6px}
+.ttl{text-align:center;font-size:18px;font-weight:700;margin:6px 0 12px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 6px}
+.g{display:grid;gap:5px 3px;align-items:center;justify-items:center}
+.gh{font-size:11px;color:var(--mut);border-bottom:2px solid var(--ln);width:100%;text-align:center;padding-bottom:2px}
+.nm{font-weight:700;line-height:1.1}.hj{color:var(--mut);line-height:1.1}
+.nm.ok{color:var(--ok)}.nm.no{color:var(--no)}
+.hl{font-size:11px;color:var(--mut)}
+.b{width:100%;max-width:34px;aspect-ratio:1;border-radius:50%;border:2px solid var(--fg);background:transparent;padding:0;cursor:pointer}
+.b.on{background:var(--fg)}
+.b.w{border-color:var(--no);box-shadow:0 0 0 2px var(--no)}
+.b.w.on{background:var(--no)}
+.leg{font-size:12px;color:var(--mut);margin:12px 8px 0;line-height:1.7}
+.res{text-align:center;font-weight:700;margin:12px 0 0;min-height:24px}
+.act{display:flex;gap:10px;margin:12px 8px 0}
+.act button{flex:1;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;background:var(--ac);color:#fff;cursor:pointer}
+.act button.x{background:var(--card);color:var(--fg);border:1px solid var(--ln)}
+</style></head><body><div id="app"></div>
+<script>
+const DATA={
+danso:{name:'단소',fs:16,holes:['제1공 왼손 엄지','제2공 왼손 집게','제3공 왼손 가운데','제4공 오른손 가운데','제5공 거의 사용 안 함'],
+groups:[['낮은 소리',5],['높은 소리',5]],
+notes:[['중','仲','11110'],['임','林','11100'],['무','無','11000'],['황','潢','10000'],['태','汰','00000'],
+['중','㳞','11110'],['임','淋','11100'],['무','潕','11000'],['황','㶂','10000'],['태','㳲','10100']]},
+sogeum:{name:'소금',fs:12,holes:['제1공 왼손 집게','제2공 왼손 가운뎃','제3공 왼손 약손','제4공 오른손 집게','제5공 오른손 가운뎃','제6공 오른손 약손'],
+groups:[['저취',6],['평취',7],['역취',3]],
+notes:[['임','林','111111'],['남','南','111110'],['무','無','111101'],['황','潢','111000'],['태','汰','110000'],['고','㴌','100000'],
+['중','㳞','011001'],['임','淋','011111'],['남','湳','111110'],['무','潕','111101'],['황','㶂','111000'],['태','㳲','110000'],['고','㵈','100011'],
+['중','㴢','000111'],['임','㵉','011001'],['남','㵜','110001']]}};
+let inst,marks,checked;
+const $=document.getElementById('app');
+function home(){$.innerHTML=`<h1>운지법 익히기</h1><p class="s">악기를 선택하세요</p>
+<button class="big" onclick="start('danso')">단소<small>5개 구멍 · 10개 음</small></button>
+<button class="big" onclick="start('sogeum')">소금<small>6개 구멍 · 16개 음</small></button>`;}
+function start(k){inst=k;reset();}
+function reset(){const d=DATA[inst];marks=d.notes.map(()=>d.holes.map(()=>0));checked=false;draw();}
+function draw(){
+ const d=DATA[inst],n=d.notes.length,H=d.holes.length;let c='',score=0;
+ d.groups.forEach(([l,k])=>c+=`<div class="gh" style="grid-column:span ${k}">${l}</div>`);
+ c=`<div></div>`+c;
+ const colOk=d.notes.map((x,j)=>x[2].split('').every((a,i)=>+a===marks[j][i]));
+ if(checked)score=colOk.filter(Boolean).length;
+ const cls=j=>checked?(colOk[j]?' ok':' no'):'';
+ c+=`<div class="hl">율명</div>`+d.notes.map((x,j)=>`<div class="nm${cls(j)}">${x[0]}</div>`).join('');
+ c+=`<div class="hl">한자</div>`+d.notes.map(x=>`<div class="hj">${x[1]}</div>`).join('');
+ for(let i=0;i<H;i++){
+  c+=`<div class="hl">${i+1}공</div>`;
+  d.notes.forEach((x,j)=>{const a=+x[2][i],m=marks[j][i];
+   const on=checked?a:m;const w=checked&&a!==m;
+   c+=`<button class="b${on?' on':''}${w?' w':''}" onclick="tog(${j},${i})"></button>`;});
+ }
+ const leg=d.holes.map(h=>h.replace(' ',' : ')).join(' · ');
+ $.innerHTML=`<div class="top"><button onclick="home()">← 처음으로</button><span>${d.name}</span></div>
+ <div class="ttl">${d.name} 운지법</div>
+ <div class="card"><div class="g" style="grid-template-columns:24px repeat(${n},1fr);font-size:${d.fs}px">${c}</div></div>
+ <div class="leg">눌러서 채우면 ● 막기, 비워두면 ○ 열기<br>${leg}</div>
+ <div class="res" style="color:${score===n?'var(--ok)':'var(--no)'}">${checked?`${n}개 중 ${score}개 정답`+(score===n?' 🎉':' · 빨간 테두리가 틀린 곳(정답 표시)'):''}</div>
+ <div class="act">${checked?`<button onclick="reset()">다시 풀기</button>`:`<button class="x" onclick="reset()">초기화</button><button onclick="chk()">채점</button>`}</div>`;
+}
+function tog(j,i){if(checked)return;marks[j][i]^=1;draw();}
+function chk(){checked=true;draw();}
+home();
+</script></body></html>
