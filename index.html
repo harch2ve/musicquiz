@@ -61,7 +61,7 @@ function draw(){
   c+=`<div class="hl">${i+1}공</div>`;
   d.notes.forEach((x,j)=>{const a=+x[2][i],m=marks[j][i];
    const on=checked?a:m;const w=checked&&a!==m;
-   c+=`<button class="b${on?' on':''}${w?' w':''}" onclick="tog(${j},${i})"></button>`;});
+   c+=`<button class="b${on?' on':''}${w?' w':''}" onclick="tog(${j},${i},this)"></button>`;});
  }
  const leg=d.holes.map(h=>h.replace(' ',' : ')).join(' · ');
  $.innerHTML=`<div class="top"><button onclick="home()">← 처음으로</button><span>${d.name}</span></div>
@@ -71,7 +71,8 @@ function draw(){
  <div class="res" style="color:${score===n?'var(--ok)':'var(--no)'}">${checked?`${n}개 중 ${score}개 정답`+(score===n?' 🎉':' · 빨간 테두리가 틀린 곳(정답 표시)'):''}</div>
  <div class="act">${checked?`<button onclick="reset()">다시 풀기</button>`:`<button class="x" onclick="reset()">초기화</button><button onclick="chk()">채점</button>`}</div>`;
 }
-function tog(j,i){if(checked)return;marks[j][i]^=1;draw();}
+function tog(j,i,el){if(checked)return;marks[j][i]^=1;el.classList.toggle('on');}
 function chk(){checked=true;draw();}
+let lt=0;document.addEventListener('touchend',e=>{const b=e.target.closest('.b'),n=Date.now();if(b){e.preventDefault();b.click();}else if(n-lt<400&&!e.target.closest('button'))e.preventDefault();lt=n;},{passive:false});
 home();
 </script></body></html>
