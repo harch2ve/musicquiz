@@ -29,6 +29,22 @@ p.s{text-align:center;color:var(--mut);margin:0 0 28px;font-size:14px}
 .act{display:flex;gap:10px;margin:12px 8px 0}
 .act button{flex:1;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;background:var(--ac);color:#fff;cursor:pointer}
 .act button.x{background:var(--card);color:var(--fg);border:1px solid var(--ln)}
+.g{touch-action:none}
+.mode{display:flex;gap:8px;justify-content:center;margin:0 0 10px}
+.mode button{padding:8px 16px;border-radius:99px;border:1px solid var(--ln);background:var(--card);color:var(--fg);font-size:14px;cursor:pointer}
+.mode button.s{background:var(--ac);border-color:var(--ac);color:#fff}
+.tip{text-align:center;font-size:12px;color:var(--mut);margin:0 0 8px}
+.qc{touch-action:none;padding:4px 14px}
+.qr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--ln)}
+.qr:last-child{border:none}
+.qr .lb{font-size:15px}.qr .lb small{display:block;color:var(--mut);font-size:12px}
+.qr .b{width:48px;max-width:none;flex:none}
+.qn{text-align:center;margin:14px 0 2px;font-size:56px;font-weight:800;color:var(--ac);line-height:1.1}
+.qn small{display:block;font-size:30px;color:var(--mut);font-weight:400}
+.qt{text-align:center;color:var(--mut);font-size:14px;margin-bottom:12px}
+.hg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 8px 22px}
+.hg .big{width:auto;margin:0;padding:22px 8px}
+.sec{font-size:14px;color:var(--mut);margin:0 10px 8px;font-weight:700}
 </style></head><body><div id="app"></div>
 <script>
 const DATA={
@@ -41,17 +57,19 @@ groups:[['저취',6],['평취',7],['역취',3]],
 notes:[['임','林','111111'],['남','南','111110'],['무','無','111101'],['황','潢','111000'],['태','汰','110000'],['고','㴌','100000'],
 ['중','㳞','011001'],['임','淋','011111'],['남','湳','111110'],['무','潕','111101'],['황','㶂','111000'],['태','㳲','110000'],['고','㵈','100011'],
 ['중','㴢','000111'],['임','㵉','011001'],['남','㵜','110001']]}};
-let inst,marks,checked;
+let inst,marks,checked,deck,qi,score,painting=false,pv=0;
 const $=document.getElementById('app');
-function home(){$.innerHTML=`<h1>운지법 익히기</h1><p class="s">악기를 선택하세요</p>
-<button class="big" onclick="start('danso')">단소<small>5개 구멍 · 10개 음</small></button>
-<button class="big" onclick="start('sogeum')">소금<small>6개 구멍 · 16개 음</small></button>`;}
+function home(){$.innerHTML=`<h1>🪈 운지법 익히기 🎶</h1><p class="s">🎼 연습 방식을 선택하세요</p>
+<div class="sec">📝 표 전체 채우기</div>
+<div class="hg"><button class="big" onclick="start('danso')">🪈 단소<small>10개 음</small></button><button class="big" onclick="start('sogeum')">🎵 소금<small>16개 음</small></button></div>
+<div class="sec">🎲 랜덤 문제 (율명 하나씩)</div>
+<div class="hg"><button class="big" onclick="startQ('danso')">🪈 단소<small>🎲 랜덤</small></button><button class="big" onclick="startQ('sogeum')">🎵 소금<small>🎲 랜덤</small></button></div>`;}
+function mk(){const d=DATA[inst];marks=d.notes.map(()=>d.holes.map(()=>0));checked=false;}
 function start(k){inst=k;reset();}
-function reset(){const d=DATA[inst];marks=d.notes.map(()=>d.holes.map(()=>0));checked=false;draw();}
+function reset(){mk();draw();}
 function draw(){
  const d=DATA[inst],n=d.notes.length,H=d.holes.length;let c='',score=0;
- d.groups.forEach(([l,k])=>c+=`<div class="gh" style="grid-column:span ${k}">${l}</div>`);
- c=`<div></div>`+c;
+ c+=`<div></div>`;d.groups.forEach(([l,k])=>c+=`<div class="gh" style="grid-column:span ${k}">${l}</div>`);
  const colOk=d.notes.map((x,j)=>x[2].split('').every((a,i)=>+a===marks[j][i]));
  if(checked)score=colOk.filter(Boolean).length;
  const cls=j=>checked?(colOk[j]?' ok':' no'):'';
@@ -61,18 +79,45 @@ function draw(){
   c+=`<div class="hl">${i+1}공</div>`;
   d.notes.forEach((x,j)=>{const a=+x[2][i],m=marks[j][i];
    const on=checked?a:m;const w=checked&&a!==m;
-   c+=`<button class="b${on?' on':''}${w?' w':''}" onclick="tog(${j},${i},this)"></button>`;});
+   c+=`<button class="b${on?' on':''}${w?' w':''}" data-j="${j}" data-i="${i}"></button>`;});
  }
  const leg=d.holes.map(h=>h.replace(' ',' : ')).join(' · ');
- $.innerHTML=`<div class="top"><button onclick="home()">← 처음으로</button><span>${d.name}</span></div>
- <div class="ttl">${d.name} 운지법</div>
+ $.innerHTML=`<div class="top"><button onclick="home()">🏠 처음으로</button><span>${d.name}</span></div>
+ <div class="ttl">🎼 ${d.name} 운지법 🎶</div>
+ <div class="tip">👆 눌러서 채우거나, 누른 채 밀어서 색칠하세요</div>
  <div class="card"><div class="g" style="grid-template-columns:24px repeat(${n},1fr);font-size:${d.fs}px">${c}</div></div>
- <div class="leg">눌러서 채우면 ● 막기, 비워두면 ○ 열기<br>${leg}</div>
- <div class="res" style="color:${score===n?'var(--ok)':'var(--no)'}">${checked?`${n}개 중 ${score}개 정답`+(score===n?' 🎉':' · 빨간 테두리가 틀린 곳(정답 표시)'):''}</div>
- <div class="act">${checked?`<button onclick="reset()">다시 풀기</button>`:`<button class="x" onclick="reset()">초기화</button><button onclick="chk()">채점</button>`}</div>`;
+ <div class="leg">채우면 ● 막기, 비워두면 ○ 열기<br>${leg}</div>
+ <div class="res" style="color:${score===n?'var(--ok)':'var(--no)'}">${checked?`${n}개 중 ${score}개 정답`+(score===n?' 🎉✨':' 😅 · 빨간 테두리가 틀린 곳(정답 표시)'):''}</div>
+ <div class="act">${checked?`<button onclick="reset()">🔁 다시 풀기</button>`:`<button class="x" onclick="reset()">🧹 초기화</button><button onclick="chk()">✅ 채점</button>`}</div>`;
 }
-function tog(j,i,el){if(checked)return;marks[j][i]^=1;el.classList.toggle('on');}
 function chk(){checked=true;draw();}
-let lt=0;document.addEventListener('touchend',e=>{const b=e.target.closest('.b'),n=Date.now();if(b){e.preventDefault();b.click();}else if(n-lt<400&&!e.target.closest('button'))e.preventDefault();lt=n;},{passive:false});
+function startQ(k){inst=k;mk();const d=DATA[k];deck=d.notes.map((_,i)=>i).sort(()=>Math.random()-.5);qi=0;score=0;drawQ();}
+function drawQ(){
+ const d=DATA[inst],j=deck[qi],x=d.notes[j],H=d.holes.length,N=deck.length;
+ const tags=[];d.groups.forEach(([l,k])=>{for(let q=0;q<k;q++)tags.push(l)});
+ const ok=checked&&x[2].split('').every((a,i)=>+a===marks[j][i]);
+ const rows=d.holes.map((h,i)=>{const a=+x[2][i],m=marks[j][i],on=checked?a:m,w=checked&&a!==m;const[p,q]=h.split(' ');
+  return `<div class="qr"><div class="lb">${p}<small>${h.slice(p.length+1)}</small></div><button class="b${on?' on':''}${w?' w':''}" data-j="${j}" data-i="${i}"></button></div>`}).join('');
+ const last=qi===N-1;
+ $.innerHTML=`<div class="top"><button onclick="home()">🏠 처음으로</button><span>${d.name} · ${qi+1} / ${N} · 정답 ${score}</span></div>
+ <div class="qn">${x[0]}<small>${x[1]}</small></div><div class="qt">🎵 ${d.name} · ${tags[j]}</div>
+ <div class="card qc">${rows}</div>
+ <div class="leg" style="text-align:center">눌러서 채우거나 밀어서 색칠 · 채우면 ● 막기, 비워두면 ○ 열기</div>
+ <div class="res" style="color:${ok?'var(--ok)':'var(--no)'}">${checked?(ok?'정답입니다! 🎉':'앗, 틀렸어요 😅 · 빨간 테두리가 정답 표시'):''}</div>
+ <div class="act">${checked?`<button onclick="nextQ()">${last?'🏆 결과 보기':'다음 문제 ➡️'}</button>`:`<button class="x" onclick="clrQ()">🧹 초기화</button><button onclick="chkQ()">✅ 채점</button>`}</div>`;
+}
+function clrQ(){marks[deck[qi]]=DATA[inst].holes.map(()=>0);drawQ();}
+function chkQ(){const j=deck[qi];checked=true;if(DATA[inst].notes[j][2].split('').every((a,i)=>+a===marks[j][i]))score++;drawQ();}
+function nextQ(){if(qi===deck.length-1){finQ();return;}qi++;checked=false;drawQ();}
+function finQ(){const N=deck.length;
+ $.innerHTML=`<h1>🏆 결과</h1><p class="s">🎲 ${DATA[inst].name} 랜덤 문제</p><div class="qn">${score} / ${N}</div><div class="qt">${score===N?'완벽해요! 🎉👏':'한 번 더 도전해 보세요 💪'}</div>
+ <div class="act"><button class="x" onclick="home()">🏠 처음으로</button><button onclick="startQ(inst)">🔁 다시 하기</button></div>`;}
+function setCell(b){if(checked||!b)return;const j=+b.dataset.j,i=+b.dataset.i;
+ if(marks[j][i]!==pv){marks[j][i]=pv;b.classList.toggle('on',!!pv);}}
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('.b');
+ if(!b||checked)return;e.preventDefault();painting=true;pv=marks[+b.dataset.j][+b.dataset.i]?0:1;setCell(b);});
+document.addEventListener('pointermove',e=>{if(!painting)return;
+ const el=document.elementFromPoint(e.clientX,e.clientY),b=el&&el.closest&&el.closest('.b');if(b)setCell(b);});
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{painting=false}));
 home();
 </script></body></html>
